@@ -23,9 +23,15 @@ formats, varied ABI values, authorization, and a predictable contract error.
   `Vec<T>`, `Map<K, V>`, `Option<T>`, struct returns, and a contract enum.
 - **Failure** — `boom()` always returns `Error::Deliberate`.
 
-## Local development
+## Contributing to the contracts
 
-Run commands from the repository root. Each command below includes a typical
+This directory is a Cargo workspace of Soroban (Rust) contracts. The pinned
+Rust toolchain installs `wasm32v1-none`, rustfmt, and clippy, so no extra setup
+is required beyond a standard Rust install.
+
+### Build, test, format, and lint
+
+Run commands from `contracts/`. Each command below includes a typical
 successful result; timing and compiler progress can differ by machine.
 
 ```bash
@@ -79,9 +85,29 @@ Example output:
 ℹ️  Build Complete
 ```
 
-The pinned Rust toolchain installs `wasm32v1-none`, rustfmt, and clippy. Tests
-also write ledger snapshots to `showcase/test_snapshots/`; those snapshots are
-committed so state changes are visible in review.
+Tests also write ledger snapshots to `<crate>/test_snapshots/`; those snapshots
+are committed so state changes are visible in review. Run `cargo fmt` and
+`cargo clippy` before opening a PR — CI rejects unformatted code and warnings.
+
+### Adding a new contract
+
+1. Create a new crate directory under `contracts/`, e.g. `contracts/my-contract/`,
+   with its own `Cargo.toml` and `src/lib.rs`.
+2. Register the crate as a workspace member in `contracts/Cargo.toml` (add it to
+   the `members` list) so `cargo test`, `cargo fmt`, and `cargo clippy` pick it up.
+3. Annotate the contract with `#[contract]` and its interface with
+   `#[contractimpl]`, following the layout in `showcase/src/lib.rs`.
+4. Add unit tests in `src/test.rs` using `soroban_sdk::Env` and the generated
+   client, mirroring the existing `showcase` tests.
+5. Run `cargo test` to generate `test_snapshots/`, then commit the snapshots
+   alongside the code.
+6. Document the new crate in the **Contracts** table above.
+
+### Reference
+
+- [Soroban documentation](https://developers.stellar.org/docs/build/smart-contracts/overview)
+- [Stellar SDK / CLI docs](https://developers.stellar.org/docs/tools/developer-tools)
+- [`soroban-sdk` crate docs](https://docs.rs/soroban-sdk)
 
 ## Automated testnet deployment
 
